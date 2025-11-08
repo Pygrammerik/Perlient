@@ -43,10 +43,14 @@ jobs:
       - name: Build Linux AppImage
         if: matrix.platform == 'linux'
         run: npm run build:linux
+        env:
+          GH_TOKEN: ""
 
       - name: Build Windows EXE
         if: matrix.platform == 'win'
         run: npm run build:win
+        env:
+          GH_TOKEN: ""
 
       - name: Upload Linux artifacts
         if: matrix.platform == 'linux'

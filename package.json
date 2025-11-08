@@ -7,10 +7,10 @@
     "start": "electron .",
     "dev": "electron . --dev",
     "generate-icon": "node generate-icon.js",
-    "build": "electron-builder --linux AppImage",
-    "build:linux": "electron-builder --linux AppImage",
-    "build:win": "electron-builder --win",
-    "build:all": "electron-builder --linux --win"
+    "build": "electron-builder --linux AppImage --publish never",
+    "build:linux": "electron-builder --linux AppImage --publish never",
+    "build:win": "electron-builder --win --publish never",
+    "build:all": "electron-builder --linux --win --publish never"
   },
   "keywords": [
     "perplexity",
@@ -63,7 +63,8 @@
     ],
     "directories": {
       "output": "dist"
-    }
+    },
+    "publish": null
   },
   "devDependencies": {
     "electron": "^28.0.0",
