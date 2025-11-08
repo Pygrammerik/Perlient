@@ -86,22 +86,41 @@ jobs:
         id: tag_version
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            VERSION="${{ github.event.inputs.version }}"
+            INPUT_VERSION="${{ github.event.inputs.version }}"
+            # Extract version number (remove any text before numbers, keep only version pattern)
+            VERSION=$(echo "$INPUT_VERSION" | sed -E 's/.*[^0-9]([0-9]+\.[0-9]+\.[0-9]+).*/\1/' || echo "$INPUT_VERSION")
             # Remove 'v' prefix if present
             VERSION=${VERSION#v}
-            echo "VERSION=v${VERSION}" >> $GITHUB_OUTPUT
+            # Trim whitespace
+            VERSION=$(echo "$VERSION" | xargs)
+            # Ensure it starts with 'v'
+            if [[ ! "$VERSION" =~ ^v ]]; then
+              VERSION="v${VERSION}"
+            fi
+            # Output without extra spaces
+            echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+            echo "Extracted version: '${VERSION}'"
           else
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            # Trim whitespace
+            TAG_NAME=$(echo "$TAG_NAME" | xargs)
+            echo "VERSION=${TAG_NAME}" >> $GITHUB_OUTPUT
+            echo "Using tag: '${TAG_NAME}'"
           fi
 
       - name: Create tag if workflow_dispatch
         if: github.event_name == 'workflow_dispatch'
         run: |
           VERSION="${{ steps.tag_version.outputs.VERSION }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$VERSION" -m "Release $VERSION" || true
-          git push origin "$VERSION" || true
+          # Check if tag already exists
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists, skipping creation"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "$VERSION" -m "Release $VERSION"
+            git push origin "$VERSION"
+          fi
 
       - name: Download Linux artifacts
         uses: actions/download-artifact@v4
@@ -115,8 +134,32 @@ jobs:
           name: windows-build
           path: release/windows
 
+      - name: Verify tag exists
+        run: |
+          VERSION="${{ steps.tag_version.outputs.VERSION }}"
+          # Trim whitespace
+          VERSION=$(echo "$VERSION" | xargs)
+          echo "Checking if tag '$VERSION' exists..."
+          echo "Tag name length: ${#VERSION}"
+          # Fetch all tags
+          git fetch --tags
+          # Wait a bit if tag was just created
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            sleep 2
+          fi
+          # Verify tag exists
+          if ! git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Error: Tag '$VERSION' does not exist!"
+            echo "Available tags:"
+            git tag -l | head -10
+            exit 1
+          fi
+          echo "Tag '$VERSION' verified successfully"
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.tag_version.outputs.VERSION }}
           name: Release ${{ steps.tag_version.outputs.VERSION }}
