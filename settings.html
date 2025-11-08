@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Perlient</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .settings-container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    
+    .header {
+      margin-bottom: 32px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+      letter-spacing: -0.02em;
+    }
+    
+    .subtitle {
+      font-size: 14px;
+      color: #666;
+      font-weight: 400;
+    }
+    
+    .settings-section {
+      margin-bottom: 32px;
+    }
+    
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+    
+    .setting-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid #f0f0f0;
+      transition: background-color 0.2s;
+    }
+    
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+    
+    .setting-item:hover {
+      background-color: #fafafa;
+      margin: 0 -16px;
+      padding-left: 16px;
+      padding-right: 16px;
+      border-radius: 8px;
+    }
+    
+    .setting-content {
+      flex: 1;
+      padding-right: 24px;
+    }
+    
+    .setting-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+    
+    .setting-description {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+    
+    /* Toggle Switch в стиле Perplexity */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #d1d5db;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 12px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    input:checked + .slider {
+      background-color: #1a1a1a;
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+    
+    input:focus + .slider {
+      box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+    }
+    
+    .buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid #e5e5e5;
+    }
+    
+    button {
+      flex: 1;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    
+    .btn-save {
+      background: #1a1a1a;
+      color: white;
+    }
+    
+    .btn-save:hover {
+      background: #2d2d2d;
+    }
+    
+    .btn-save:active {
+      transform: scale(0.98);
+    }
+    
+    .btn-cancel {
+      background: transparent;
+      color: #666;
+      border: 1px solid #e5e5e5;
+    }
+    
+    .btn-cancel:hover {
+      background: #fafafa;
+      border-color: #d1d5db;
+    }
+    
+    .status-message {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 13px;
+      display: none;
+      font-weight: 500;
+    }
+    
+    .status-message.success {
+      background: #f0f9f4;
+      color: #166534;
+      display: block;
+      border: 1px solid #bbf7d0;
+    }
+    
+    .status-message.error {
+      background: #fef2f2;
+      color: #991b1b;
+      display: block;
+      border: 1px solid #fecaca;
+    }
+  </style>
+</head>
+<body>
+  <div class="settings-container">
+    <div class="header">
+      <h1>Settings</h1>
+      <p class="subtitle">Customize your Perlient experience</p>
+    </div>
+    
+    <div class="settings-section">
+      <div class="section-title">Interface</div>
+      
+      <div class="setting-item">
+        <div class="setting-content">
+          <div class="setting-title">Hide Sidebar</div>
+          <div class="setting-description">Hide the navigation sidebar with Home, Discover, and other menu items</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="hideSidebar" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-content">
+          <div class="setting-title">Hide Navigation</div>
+          <div class="setting-description">Hide navigation elements in the header</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="hideNavigation" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-content">
+          <div class="setting-title">Hide Comet Banner</div>
+          <div class="setting-description">Hide the "Get Ai Power in your browser with Comet Assistant" promotional banner</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="hideBanner" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <div class="section-title">Branding</div>
+      
+      <div class="setting-item">
+        <div class="setting-content">
+          <div class="setting-title">Replace Text with "Perlient"</div>
+          <div class="setting-description">Replace all instances of "Perplexity" with "Perlient" throughout the interface</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="replaceText" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <div class="section-title">Appearance</div>
+      
+      <div class="setting-item">
+        <div class="setting-content">
+          <div class="setting-title">Dark Mode</div>
+          <div class="setting-description">Enable dark theme for the application</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="darkMode">
+          <span class="slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-content">
+          <div class="setting-title">Zoom Level</div>
+          <div class="setting-description">Adjust the zoom level of the page (50% - 200%)</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; min-width: 120px;">
+          <input type="range" id="zoomLevel" min="0.5" max="2" step="0.1" value="1.0" style="flex: 1;">
+          <span id="zoomValue" style="font-size: 13px; color: #666; min-width: 40px; text-align: right;">100%</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <div class="section-title">Behavior</div>
+      
+      <div class="setting-item">
+        <div class="setting-content">
+          <div class="setting-title">Minimize to Tray</div>
+          <div class="setting-description">Minimize the window to system tray instead of taskbar</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="minimizeToTray">
+          <span class="slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-content">
+          <div class="setting-title">Start Minimized</div>
+          <div class="setting-description">Start the application in minimized state</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="startMinimized">
+          <span class="slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-content">
+          <div class="setting-title">Block Ads</div>
+          <div class="setting-description">Block advertisements and promotional content</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="blockAds" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-content">
+          <div class="setting-title">Auto Reload</div>
+          <div class="setting-description">Automatically reload page when connection is lost</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="autoReload">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <div class="section-title">Advanced</div>
+      
+      <div class="setting-item" style="flex-direction: column; align-items: stretch;">
+        <div class="setting-content" style="padding-right: 0; margin-bottom: 12px;">
+          <div class="setting-title">Custom CSS</div>
+          <div class="setting-description">Add custom CSS styles to modify the appearance. Warning: Incorrect CSS may hide content!</div>
+        </div>
+        <textarea id="customCSS" placeholder="/* Your custom CSS here - be careful not to hide main content */" style="width: 100%; min-height: 120px; padding: 12px; border: 1px solid #e5e5e5; border-radius: 8px; font-family: 'Monaco', 'Menlo', 'Courier New', monospace; font-size: 12px; resize: vertical; background: #fafafa; color: #1a1a1a;"></textarea>
+        <button onclick="document.getElementById('customCSS').value = ''" style="margin-top: 8px; padding: 6px 12px; background: transparent; border: 1px solid #e5e5e5; border-radius: 6px; font-size: 12px; color: #666; cursor: pointer; align-self: flex-start;">Clear CSS</button>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <div class="section-title">Troubleshooting</div>
+      
+      <div class="setting-item">
+        <div class="setting-content">
+          <div class="setting-title">Disable All Modifications</div>
+          <div class="setting-description">Temporarily disable all modifications to test if they cause issues</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="disableAll">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="buttons">
+      <button class="btn-cancel" id="cancelBtn">Cancel</button>
+      <button class="btn-save" id="saveBtn">Save Changes</button>
+    </div>
+    
+    <div class="status-message" id="statusMessage"></div>
+  </div>
+  
+  <script>
+    const { ipcRenderer } = require('electron');
+    
+    // Загружаем настройки при открытии
+    window.addEventListener('DOMContentLoaded', () => {
+      ipcRenderer.send('load-settings');
+    });
+    
+    // Получаем настройки от главного процесса
+    ipcRenderer.on('settings-loaded', (event, settings) => {
+      if (settings) {
+        document.getElementById('hideSidebar').checked = settings.hideSidebar !== false;
+        document.getElementById('hideBanner').checked = settings.hideBanner !== false;
+        document.getElementById('replaceText').checked = settings.replaceText !== false;
+        document.getElementById('hideNavigation').checked = settings.hideNavigation !== false;
+        document.getElementById('darkMode').checked = settings.darkMode === true;
+        document.getElementById('minimizeToTray').checked = settings.minimizeToTray === true;
+        document.getElementById('startMinimized').checked = settings.startMinimized === true;
+        document.getElementById('blockAds').checked = settings.blockAds !== false;
+        document.getElementById('autoReload').checked = settings.autoReload === true;
+        document.getElementById('customCSS').value = settings.customCSS || '';
+        document.getElementById('disableAll').checked = settings.disableAll === true;
+        
+        const zoomLevel = settings.zoomLevel || 1.0;
+        document.getElementById('zoomLevel').value = zoomLevel;
+        document.getElementById('zoomValue').textContent = Math.round(zoomLevel * 100) + '%';
+        
+        // Если все модификации отключены, обновляем чекбоксы
+        if (settings.disableAll) {
+          document.getElementById('hideSidebar').checked = false;
+          document.getElementById('hideBanner').checked = false;
+          document.getElementById('replaceText').checked = false;
+          document.getElementById('hideNavigation').checked = false;
+          document.getElementById('blockAds').checked = false;
+          document.getElementById('customCSS').value = '';
+        }
+      }
+    });
+    
+    // Обработка переключателя "Disable All"
+    document.getElementById('disableAll').addEventListener('change', (e) => {
+      const disabled = e.target.checked;
+      document.getElementById('hideSidebar').disabled = disabled;
+      document.getElementById('hideBanner').disabled = disabled;
+      document.getElementById('replaceText').disabled = disabled;
+      document.getElementById('hideNavigation').disabled = disabled;
+      document.getElementById('blockAds').disabled = disabled;
+      document.getElementById('customCSS').disabled = disabled;
+    });
+    
+    // Обновление значения zoom при изменении
+    document.getElementById('zoomLevel').addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      document.getElementById('zoomValue').textContent = Math.round(value * 100) + '%';
+    });
+    
+    // Сохранение настроек
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const disableAll = document.getElementById('disableAll').checked;
+      
+      const settings = {
+        hideSidebar: disableAll ? false : document.getElementById('hideSidebar').checked,
+        hideBanner: disableAll ? false : document.getElementById('hideBanner').checked,
+        replaceText: disableAll ? false : document.getElementById('replaceText').checked,
+        hideNavigation: disableAll ? false : document.getElementById('hideNavigation').checked,
+        darkMode: document.getElementById('darkMode').checked,
+        minimizeToTray: document.getElementById('minimizeToTray').checked,
+        startMinimized: document.getElementById('startMinimized').checked,
+        blockAds: disableAll ? false : document.getElementById('blockAds').checked,
+        autoReload: document.getElementById('autoReload').checked,
+        customCSS: disableAll ? '' : document.getElementById('customCSS').value,
+        zoomLevel: parseFloat(document.getElementById('zoomLevel').value),
+        disableAll: disableAll
+      };
+      
+      ipcRenderer.send('save-settings', settings);
+    });
+    
+    // Отмена
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+      window.close();
+    });
+    
+    // Обработка ответа о сохранении
+    ipcRenderer.on('settings-saved', (event, success) => {
+      const statusMessage = document.getElementById('statusMessage');
+      if (success) {
+        statusMessage.textContent = 'Settings saved successfully';
+        statusMessage.className = 'status-message success';
+        setTimeout(() => {
+          window.close();
+        }, 1500);
+      } else {
+        statusMessage.textContent = 'Failed to save settings';
+        statusMessage.className = 'status-message error';
+      }
+    });
+  </script>
+</body>
+</html>

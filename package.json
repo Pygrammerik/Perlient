@@ -1,0 +1,73 @@
+{
+  "name": "perlient",
+  "version": "1.0.0",
+  "description": "Minimalistic Perplexity client built with Electron",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "generate-icon": "node generate-icon.js",
+    "build": "electron-builder --linux AppImage",
+    "build:linux": "electron-builder --linux AppImage",
+    "build:win": "electron-builder --win",
+    "build:all": "electron-builder --linux --win"
+  },
+  "keywords": [
+    "perplexity",
+    "electron",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "build": {
+    "appId": "com.perlient.app",
+    "productName": "Perlient",
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility",
+      "icon": "icon.png"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "icon": "icon.png",
+    "files": [
+      "main.js",
+      "settings.js",
+      "settings.html",
+      "package.json",
+      "icon.png",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    }
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^26.0.12",
+    "sharp": "^0.34.5"
+  }
+}
