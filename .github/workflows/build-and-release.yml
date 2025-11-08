@@ -1,0 +1,130 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate icon
+        run: npm run generate-icon
+        continue-on-error: true
+
+      - name: Build Linux AppImage
+        if: matrix.platform == 'linux'
+        run: npm run build:linux
+
+      - name: Build Windows EXE
+        if: matrix.platform == 'win'
+        run: npm run build:win
+
+      - name: Upload Linux artifacts
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: dist/*.AppImage
+          retention-days: 30
+
+      - name: Upload Windows artifacts
+        if: matrix.platform == 'win'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: dist/*.exe
+          retention-days: 30
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: tag_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build
+          path: release/linux
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+          path: release/windows
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag_version.outputs.VERSION }}
+          name: Release ${{ steps.tag_version.outputs.VERSION }}
+          body: |
+            ## Perlient ${{ steps.tag_version.outputs.VERSION }}
+
+            ### Downloads
+
+            **Linux:**
+            - AppImage: `Perlient-*.AppImage`
+
+            **Windows:**
+            - Installer: `Perlient Setup *.exe`
+            - Portable: `Perlient *.exe`
+
+            ### Installation
+
+            **Linux:**
+            1. Download the AppImage file
+            2. Make it executable: `chmod +x Perlient-*.AppImage`
+            3. Run: `./Perlient-*.AppImage`
+
+            **Windows:**
+            1. Download the installer or portable version
+            2. Run the executable
+
+            ### Changes
+
+            See commit history for detailed changes.
+          files: |
+            release/linux/*.AppImage
+            release/windows/*.exe
+          draft: false
+          prerelease: false
+
